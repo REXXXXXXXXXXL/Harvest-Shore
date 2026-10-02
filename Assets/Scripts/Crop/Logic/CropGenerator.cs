@@ -1,0 +1,58 @@
+using System.Collections;
+using System.Collections.Generic;
+using HarvestShore.Map;
+using UnityEngine;
+
+namespace HarvestShore.CropPlant
+{
+    public class CropGenerator : MonoBehaviour
+    {
+        private Grid currentGrid;
+
+        public int seedItemID;
+        public int growthDays;
+
+        private void Awake()
+        {
+            currentGrid = SceneTools.FindGrid();
+        }
+
+        private void OnEnable()
+        {
+            EventHandler.GenerateCropEvent += GenerateCrop;
+        }
+
+        private void OnDisable()
+        {
+            EventHandler.GenerateCropEvent -= GenerateCrop;
+        }
+
+        private void GenerateCrop()
+        {
+            if (currentGrid == null)
+                currentGrid = SceneTools.FindGrid();
+            if (currentGrid == null)
+                return;
+
+            Vector3Int cropGridPos = currentGrid.WorldToCell(transform.position);
+
+            if (seedItemID != 0)
+            {
+                var tile = GridMapManager.Instance.GetTileDetailsOnMousePosition(cropGridPos);
+
+                if (tile == null)
+                {
+                    tile = new TileDetails();
+                    tile.girdX = cropGridPos.x;
+                    tile.gridY = cropGridPos.y;
+                }
+
+                tile.daysSinceWatered = -1;
+                tile.seedItemID = seedItemID;
+                tile.growthDays = growthDays;
+
+                GridMapManager.Instance.UpdateTileDetails(tile);
+            }
+        }
+    }
+}
